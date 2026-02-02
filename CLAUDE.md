@@ -4,7 +4,7 @@ This file provides guidance for AI assistants (like Claude) working on this code
 
 ## Project Overview
 
-**Antigravity Project** is a new repository currently in its initial setup phase. As the project evolves, this document should be updated to reflect the current state of the codebase.
+**Antigravity Project** demonstrates the MOST Web Framework (Codename ZeroGravity) query module - a powerful SQL query builder for Node.js.
 
 **Repository**: gregorpetri-git/antigravity-project
 
@@ -14,7 +14,9 @@ This file provides guidance for AI assistants (like Claude) working on this code
 antigravity-project/
 ├── README.md          # Project documentation
 ├── CLAUDE.md          # This file - AI assistant guidelines
-└── (project files will be added here)
+├── package.json       # npm configuration and dependencies
+├── demo.js            # ZeroGravity query module demo
+└── node_modules/      # Dependencies (git-ignored)
 ```
 
 ## Development Workflow
@@ -101,27 +103,33 @@ As the project grows, follow these conventions:
 
 ## Configuration Files
 
-Track configuration files that should be documented here as they're added:
-
-- (No configuration files yet)
+- `package.json` - npm configuration, scripts, and dependencies
 
 ## Dependencies
 
-Track dependencies as they're added:
+Production dependencies:
+- `@themost/query` - SQL query builder (ZeroGravity module)
+- `@themost/express` - Express.js middleware for MOST framework
+- `express` - Web framework for Node.js
 
-- (No dependencies yet)
+## Common Commands
+
+```bash
+# Install dependencies
+npm install
+
+# Run the demo
+npm run demo
+```
 
 ## Testing
 
-Document testing strategy when established:
-
-- (No test framework configured yet)
+- No test framework configured yet
+- Consider adding Jest or Mocha for unit tests
 
 ## Build & Deploy
 
-Document build and deployment processes when established:
-
-- (No build process configured yet)
+- No build process configured yet (pure Node.js, no transpilation needed)
 
 ---
 
