@@ -1,6 +1,6 @@
 'use client';
 
-import Image from 'next/image';
+import { useState } from 'react';
 import { Car, calculateOwnership } from '@/types';
 
 interface CarCardProps {
@@ -9,22 +9,39 @@ interface CarCardProps {
 }
 
 export default function CarCard({ car, onEdit }: CarCardProps) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const ownership = calculateOwnership(car.yearBought, car.yearSold);
   const soldDisplay = car.yearSold ? car.yearSold.toString() : 'Present';
 
   return (
     <div className="car-card bg-white rounded-lg shadow-md overflow-hidden">
       {/* Car Image */}
-      <div className="relative h-48 bg-gray-100">
-        {car.imageUrl ? (
-          <Image
-            src={car.imageUrl}
-            alt={`${car.yearBuilt} ${car.make} ${car.model}`}
-            fill
-            className="object-cover"
-          />
+      <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200">
+        {car.imageUrl && !imageError ? (
+          <>
+            {/* Loading spinner */}
+            {!imageLoaded && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="w-8 h-8 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin mx-auto mb-2"></div>
+                  <span className="text-xs text-gray-400">Generating image...</span>
+                </div>
+              </div>
+            )}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={car.imageUrl}
+              alt={`${car.yearBuilt} ${car.make} ${car.model}`}
+              className={`w-full h-full object-cover transition-opacity duration-300 ${
+                imageLoaded ? 'opacity-100' : 'opacity-0'
+              }`}
+              onLoad={() => setImageLoaded(true)}
+              onError={() => setImageError(true)}
+            />
+          </>
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+          <div className="w-full h-full flex items-center justify-center">
             <div className="text-center text-gray-400">
               <svg
                 className="w-16 h-16 mx-auto mb-2"
@@ -39,7 +56,7 @@ export default function CarCard({ car, onEdit }: CarCardProps) {
                   d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
                 />
               </svg>
-              <span className="text-sm">No image</span>
+              <span className="text-sm">{imageError ? 'Image unavailable' : 'No image'}</span>
             </div>
           </div>
         )}
@@ -48,7 +65,7 @@ export default function CarCard({ car, onEdit }: CarCardProps) {
         {onEdit && (
           <button
             onClick={() => onEdit(car)}
-            className="absolute top-3 right-3 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition-colors"
+            className="absolute top-3 right-3 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
           >
             <svg
               className="w-4 h-4 text-gray-600"
@@ -65,6 +82,11 @@ export default function CarCard({ car, onEdit }: CarCardProps) {
             </svg>
           </button>
         )}
+
+        {/* Image style badge */}
+        <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded capitalize">
+          {car.imageStyle}
+        </div>
       </div>
 
       {/* Car Details */}

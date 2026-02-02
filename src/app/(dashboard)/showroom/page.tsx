@@ -3,9 +3,53 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import Header from '@/components/Header';
 import { Car } from '@/types';
+import { generateCarImageUrl } from '@/lib/imageGenerator';
+
+// Component for car image with loading state
+function CarImage({ car, className = '' }: { car: Car; className?: string }) {
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
+
+  if (!car.imageUrl || error) {
+    return (
+      <div className={`flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 ${className}`}>
+        <svg
+          className="w-20 h-20 text-gray-300"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1}
+            d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
+          />
+        </svg>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`relative bg-gradient-to-br from-gray-100 to-gray-200 ${className}`}>
+      {!loaded && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+        </div>
+      )}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={car.imageUrl}
+        alt={`${car.yearBuilt} ${car.make} ${car.model}`}
+        className={`w-full h-full object-cover transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+        onLoad={() => setLoaded(true)}
+        onError={() => setError(true)}
+      />
+    </div>
+  );
+}
 
 export default function ShowroomPage() {
   const router = useRouter();
@@ -27,9 +71,14 @@ export default function ShowroomPage() {
     const storedCars = localStorage.getItem('cars');
     if (storedCars) {
       const parsedCars = JSON.parse(storedCars) as Car[];
+      // Add image URLs if missing
+      const carsWithImages = parsedCars.map((car) => ({
+        ...car,
+        imageUrl: car.imageUrl || generateCarImageUrl(car.make, car.model, car.yearBuilt, car.color, car.imageStyle),
+      }));
       // Sort by yearBought for timeline
-      parsedCars.sort((a, b) => a.yearBought - b.yearBought);
-      setCars(parsedCars);
+      carsWithImages.sort((a, b) => a.yearBought - b.yearBought);
+      setCars(carsWithImages);
     }
   }, [router]);
 
@@ -112,34 +161,7 @@ export default function ShowroomPage() {
                         onClick={() => setSelectedCar(car)}
                       >
                         {/* Car Image */}
-                        <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200">
-                          {car.imageUrl ? (
-                            <Image
-                              src={car.imageUrl}
-                              alt={`${car.yearBuilt} ${car.make} ${car.model}`}
-                              fill
-                              className="object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <div className="text-center text-gray-400">
-                                <svg
-                                  className="w-20 h-20 mx-auto"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={1}
-                                    d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
-                                  />
-                                </svg>
-                              </div>
-                            </div>
-                          )}
-                        </div>
+                        <CarImage car={car} className="h-48" />
 
                         {/* Car Info */}
                         <div className="p-4">
@@ -244,32 +266,7 @@ export default function ShowroomPage() {
             </button>
 
             {/* Car Image */}
-            <div className="relative h-64 bg-gradient-to-br from-gray-100 to-gray-200">
-              {selectedCar.imageUrl ? (
-                <Image
-                  src={selectedCar.imageUrl}
-                  alt={`${selectedCar.yearBuilt} ${selectedCar.make} ${selectedCar.model}`}
-                  fill
-                  className="object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <svg
-                    className="w-24 h-24 text-gray-300"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1}
-                      d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
-                    />
-                  </svg>
-                </div>
-              )}
-            </div>
+            <CarImage car={selectedCar} className="h-64" />
 
             {/* Car Details */}
             <div className="p-6">

@@ -7,9 +7,10 @@ import Header from '@/components/Header';
 import CarCard from '@/components/CarCard';
 import AddVehicleModal from '@/components/AddVehicleModal';
 import { Car, CarFormData } from '@/types';
+import { generateCarImageUrl } from '@/lib/imageGenerator';
 
-// Sample data for demonstration
-const sampleCars: Car[] = [
+// Sample data for demonstration - now with generated images
+const createSampleCars = (): Car[] => [
   {
     id: '1',
     userId: '1',
@@ -22,7 +23,7 @@ const sampleCars: Car[] = [
     yearSold: null,
     description: 'My personal favorite',
     anecdote: 'Power and Safety',
-    imageUrl: null,
+    imageUrl: generateCarImageUrl('Volvo', 'XC90', 2021, 'Saville Grey', 'showroom'),
     imageStyle: 'showroom',
     privacy: 'private',
     createdAt: new Date(),
@@ -40,7 +41,7 @@ const sampleCars: Car[] = [
     yearSold: null,
     description: 'Sunny side up car',
     anecdote: 'Summer road trip favorite',
-    imageUrl: null,
+    imageUrl: generateCarImageUrl('Peugeot', '207CC', 2004, 'Dark Grey', 'showroom'),
     imageStyle: 'showroom',
     privacy: 'public',
     createdAt: new Date(),
@@ -58,7 +59,7 @@ const sampleCars: Car[] = [
     yearSold: null,
     description: 'Family Mover',
     anecdote: 'Great vacation Vehicle',
-    imageUrl: null,
+    imageUrl: generateCarImageUrl('Renault', 'Grand Scenic', 2006, 'Beach Sand', 'museum'),
     imageStyle: 'museum',
     privacy: 'public',
     createdAt: new Date(),
@@ -76,7 +77,7 @@ const sampleCars: Car[] = [
     yearSold: 1995,
     description: 'Mini ferrari',
     anecdote: 'By Bertone (special gift)',
-    imageUrl: null,
+    imageUrl: generateCarImageUrl('Fiat', 'X1/9', 1986, 'Ferrari Red', 'museum'),
     imageStyle: 'museum',
     privacy: 'public',
     createdAt: new Date(),
@@ -87,9 +88,10 @@ const sampleCars: Car[] = [
 export default function CollectionPage() {
   const router = useRouter();
   const [user, setUser] = useState<{ displayName: string; email: string } | null>(null);
-  const [cars, setCars] = useState<Car[]>(sampleCars);
+  const [cars, setCars] = useState<Car[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCar, setEditingCar] = useState<Car | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Check if user is logged in
@@ -98,13 +100,26 @@ export default function CollectionPage() {
       setUser(JSON.parse(storedUser));
     } else {
       router.push('/login');
+      return;
     }
 
-    // Load cars from localStorage if available
+    // Load cars from localStorage if available, otherwise use sample data
     const storedCars = localStorage.getItem('cars');
     if (storedCars) {
-      setCars(JSON.parse(storedCars));
+      const parsedCars = JSON.parse(storedCars);
+      // Regenerate image URLs for any cars that don't have them
+      const carsWithImages = parsedCars.map((car: Car) => ({
+        ...car,
+        imageUrl: car.imageUrl || generateCarImageUrl(car.make, car.model, car.yearBuilt, car.color, car.imageStyle),
+      }));
+      setCars(carsWithImages);
+    } else {
+      // Use sample cars with generated images
+      const sampleCars = createSampleCars();
+      setCars(sampleCars);
+      localStorage.setItem('cars', JSON.stringify(sampleCars));
     }
+    setIsLoading(false);
   }, [router]);
 
   const handleLogout = () => {
@@ -113,6 +128,15 @@ export default function CollectionPage() {
   };
 
   const handleAddVehicle = (formData: CarFormData) => {
+    // Generate image URL based on car details and selected style
+    const imageUrl = generateCarImageUrl(
+      formData.make,
+      formData.model,
+      formData.yearBuilt as number,
+      formData.color,
+      formData.imageStyle
+    );
+
     const newCar: Car = {
       id: Date.now().toString(),
       userId: '1',
@@ -125,7 +149,7 @@ export default function CollectionPage() {
       yearSold: formData.yearSold as number | null,
       description: formData.description,
       anecdote: formData.anecdote,
-      imageUrl: null,
+      imageUrl: imageUrl,
       imageStyle: formData.imageStyle,
       privacy: formData.privacy,
       createdAt: new Date(),
@@ -134,8 +158,23 @@ export default function CollectionPage() {
 
     let updatedCars: Car[];
     if (editingCar) {
+      // When editing, regenerate image if relevant details changed
+      const needsNewImage =
+        editingCar.make !== formData.make ||
+        editingCar.model !== formData.model ||
+        editingCar.yearBuilt !== formData.yearBuilt ||
+        editingCar.color !== formData.color ||
+        editingCar.imageStyle !== formData.imageStyle;
+
       updatedCars = cars.map((car) =>
-        car.id === editingCar.id ? { ...newCar, id: car.id, createdAt: car.createdAt } : car
+        car.id === editingCar.id
+          ? {
+              ...newCar,
+              id: car.id,
+              createdAt: car.createdAt,
+              imageUrl: needsNewImage ? imageUrl : car.imageUrl,
+            }
+          : car
       );
     } else {
       updatedCars = [...cars, newCar];
@@ -156,10 +195,10 @@ export default function CollectionPage() {
     setEditingCar(null);
   };
 
-  if (!user) {
+  if (!user || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-gray-500">Loading...</div>
+        <div className="animate-pulse text-gray-500">Loading your garage...</div>
       </div>
     );
   }
