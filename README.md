@@ -1,41 +1,109 @@
-# Antigravity Project
+# My Life in Cars
 
-A demo project showcasing the **MOST Web Framework** (Codename ZeroGravity) query module.
+A web application for documenting your personal automotive history. Create a beautiful timeline of all the cars you've owned throughout your life.
 
-## About
+## Features
 
-This project demonstrates the `@themost/query` module - a powerful SQL query builder that is part of the [MOST Web Framework](https://github.com/themost-framework).
+- **User Authentication**: Sign up with email/password or Google
+- **Car Collection**: Add, edit, and manage your vehicles
+- **Gallery View**: See all your cars in a beautiful card layout
+- **Timeline View (Virtual Showroom)**: View your cars chronologically
+- **Per-Car Privacy**: Choose which cars are public or private
+- **Rich Details**: Track make, model, year, color, ownership dates, and personal stories
 
-## Quick Start
+## Tech Stack
 
+- **Framework**: Next.js 16 with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Authentication**: Ready for Supabase integration
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18 or later
+- npm or yarn
+
+### Installation
+
+1. Clone the repository:
 ```bash
-# Install dependencies
-npm install
-
-# Run the demo
-npm run demo
+git clone https://github.com/gregorpetri-git/antigravity-project.git
+cd antigravity-project
 ```
 
-## What's Included
+2. Install dependencies:
+```bash
+npm install
+```
 
-The demo showcases various SQL query building capabilities:
+3. Run the development server:
+```bash
+npm run dev
+```
 
-1. **Simple SELECT** - Basic column selection
-2. **WHERE Clauses** - Filtering with conditions
-3. **JOINs** - Table joining operations
-4. **Aggregation** - COUNT, SUM with GROUP BY
-5. **Complex Queries** - Multiple conditions with OR/AND
-6. **INSERT** - Creating new records
-7. **UPDATE** - Modifying existing records
-8. **DELETE** - Removing records
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Dependencies
+## Project Structure
 
-- [@themost/query](https://www.npmjs.com/package/@themost/query) - SQL Query Builder (ZeroGravity)
-- [@themost/express](https://www.npmjs.com/package/@themost/express) - Express.js middleware
-- [express](https://www.npmjs.com/package/express) - Web framework
+```
+src/
+├── app/
+│   ├── (auth)/
+│   │   └── login/          # Login/Register page
+│   ├── (dashboard)/
+│   │   ├── collection/     # Gallery view (My Collection)
+│   │   └── showroom/       # Timeline view (Virtual Showroom)
+│   ├── globals.css         # Global styles
+│   ├── layout.tsx          # Root layout
+│   └── page.tsx            # Home page (redirects)
+├── components/
+│   ├── AddVehicleModal.tsx # Add/Edit vehicle form
+│   ├── CarCard.tsx         # Vehicle card component
+│   └── Header.tsx          # Navigation header
+├── types/
+│   └── index.ts            # TypeScript interfaces
+└── lib/                    # Utilities (for future use)
+```
 
-## Learn More
+## Available Scripts
 
-- [MOST Web Framework GitHub](https://github.com/themost-framework)
-- [@themost npm packages](https://www.npmjs.com/~themost)
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+
+## Car Data Model
+
+Each car entry includes:
+- Make & Model
+- Type (Sedan, Coupe, SUV, etc.)
+- Color
+- Year Built
+- Year Bought
+- Year Sold (optional - empty if still owned)
+- Description (max 100 characters)
+- Anecdote/Story (max 600 characters)
+- Image Style (Museum/Showroom)
+- Privacy Setting (Public/Private)
+
+## Future Enhancements
+
+- [ ] Supabase integration for persistent storage
+- [ ] Google OAuth authentication
+- [ ] AI-generated car images based on make/model/year/color
+- [ ] Public profile pages
+- [ ] Social sharing
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new).
+
+## License
+
+MIT
+
+---
+
+*My Life in Cars - A Timeline of Automotive Excellence*
