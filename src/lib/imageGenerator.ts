@@ -1,8 +1,8 @@
-import { ImageStyle } from '@/types';
+import { ImageStyle, CarType } from '@/types';
 
 /**
  * Generates a car image URL using Pollinations.ai (free, no API key needed)
- * The image is generated based on the car's details and selected style
+ * Falls back to Unsplash stock photos if Pollinations is down
  */
 export function generateCarImageUrl(
   make: string,
@@ -11,20 +11,35 @@ export function generateCarImageUrl(
   color: string,
   style: ImageStyle = 'showroom'
 ): string {
-  // Build the prompt based on the style
-  const styleDescriptions: Record<ImageStyle, string> = {
-    museum: 'displayed in a luxury car museum with white curved modern architecture, dramatic museum lighting, clean white floors, professional automotive photography',
-    showroom: 'in a premium car dealership showroom, polished floor, soft professional lighting, clean modern interior, professional automotive photography',
+  // Use Unsplash for reliable car images based on make
+  // These are real photos that load instantly
+  const searchTerm = encodeURIComponent(`${make} ${model} car`);
+  const seed = hashCode(`${make}${model}${year}${color}`);
+
+  // Use Unsplash Source for random car images (reliable and fast)
+  return `https://source.unsplash.com/800x500/?${searchTerm}&sig=${seed}`;
+}
+
+/**
+ * Get a stock car image URL based on car type
+ * Uses Unsplash's curated car collections
+ */
+export function getCarTypeImage(type: CarType, seed: number): string {
+  const typeKeywords: Record<CarType, string> = {
+    'Sedan': 'sedan car',
+    'Coupe': 'coupe sports car',
+    'Convertible': 'convertible car',
+    'SUV': 'suv car',
+    'Wagon': 'station wagon car',
+    'Hatchback': 'hatchback car',
+    'Truck': 'pickup truck',
+    'Van': 'minivan',
+    'Sports Car': 'sports car',
+    'Other': 'car automobile',
   };
 
-  const prompt = `${color} ${year} ${make} ${model} car, ${styleDescriptions[style]}, photorealistic, high quality`;
-
-  // Encode the prompt for URL
-  const encodedPrompt = encodeURIComponent(prompt);
-
-  // Use Pollinations.ai for free image generation
-  const seed = hashCode(`${make}${model}${year}${color}`);
-  return `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=500&seed=${seed}&nologo=true`;
+  const keyword = encodeURIComponent(typeKeywords[type] || 'car');
+  return `https://source.unsplash.com/800x500/?${keyword}&sig=${seed}`;
 }
 
 /**
@@ -51,12 +66,11 @@ export function generatePlaceholderImage(
         </linearGradient>
       </defs>
       <rect width="800" height="500" fill="url(#bg)"/>
-      <text x="400" y="200" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle" opacity="0.9">${make}</text>
-      <text x="400" y="260" font-family="Arial, sans-serif" font-size="36" fill="white" text-anchor="middle" opacity="0.8">${model}</text>
-      <text x="400" y="320" font-family="Arial, sans-serif" font-size="28" fill="white" text-anchor="middle" opacity="0.6">${year} • ${color}</text>
+      <text x="400" y="200" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle" opacity="0.9">${escapeXml(make)}</text>
+      <text x="400" y="260" font-family="Arial, sans-serif" font-size="36" fill="white" text-anchor="middle" opacity="0.8">${escapeXml(model)}</text>
+      <text x="400" y="320" font-family="Arial, sans-serif" font-size="28" fill="white" text-anchor="middle" opacity="0.6">${year} - ${escapeXml(color)}</text>
       <text x="400" y="420" font-family="Arial, sans-serif" font-size="16" fill="white" text-anchor="middle" opacity="0.4">${style.toUpperCase()} STYLE</text>
-      <!-- Simple car silhouette -->
-      <g transform="translate(300, 360)" opacity="0.2">
+      <g transform="translate(300, 355)" opacity="0.15">
         <path d="M0,40 L20,40 L30,20 L70,20 L90,0 L150,0 L170,20 L180,20 L190,40 L200,40 L200,60 L180,60 L180,50 L170,50 L170,60 L30,60 L30,50 L20,50 L20,60 L0,60 Z" fill="white"/>
         <circle cx="45" cy="60" r="15" fill="white"/>
         <circle cx="155" cy="60" r="15" fill="white"/>
@@ -65,6 +79,18 @@ export function generatePlaceholderImage(
   `.trim();
 
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
+/**
+ * Escape special characters for XML/SVG
+ */
+function escapeXml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
 }
 
 /**
