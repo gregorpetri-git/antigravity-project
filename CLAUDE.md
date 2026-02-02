@@ -15,9 +15,28 @@ antigravity-project/
 ├── README.md          # Project documentation
 ├── CLAUDE.md          # This file - AI assistant guidelines
 ├── package.json       # npm configuration and dependencies
+├── package-lock.json  # Dependency lock file (auto-generated)
 ├── demo.js            # ZeroGravity query module demo
+├── .gitignore         # Git ignore rules
 └── node_modules/      # Dependencies (git-ignored)
 ```
+
+## Key Files
+
+### demo.js
+The main demonstration file showcasing the `@themost/query` module capabilities:
+- **Lines 1-8**: Imports and setup (`QueryExpression`, `QueryField`, `SqlFormatter`)
+- **Lines 22-27**: Simple SELECT query
+- **Lines 33-39**: SELECT with WHERE and AND conditions
+- **Lines 46-54**: SELECT with JOIN operations
+- **Lines 61-71**: Aggregation with COUNT, SUM, GROUP BY, ORDER BY
+- **Lines 78-85**: Complex queries with OR conditions
+- **Lines 92-101**: INSERT operations
+- **Lines 108-113**: UPDATE operations
+- **Lines 120-124**: DELETE operations
+
+### .gitignore
+Excludes: `node_modules/`, `.env`, `*.log`, `.DS_Store`
 
 ## Development Workflow
 
@@ -108,9 +127,75 @@ As the project grows, follow these conventions:
 ## Dependencies
 
 Production dependencies:
-- `@themost/query` - SQL query builder (ZeroGravity module)
-- `@themost/express` - Express.js middleware for MOST framework
-- `express` - Web framework for Node.js
+- `@themost/query` (^2.14.17) - SQL query builder (ZeroGravity module)
+- `@themost/express` (^5.1.1) - Express.js middleware for MOST framework
+- `express` (^5.2.1) - Web framework for Node.js
+
+## @themost/query API Reference
+
+Key classes and patterns used in this project:
+
+### QueryExpression
+The main query builder class. Supports fluent/chainable API.
+
+```javascript
+const { QueryExpression } = require('@themost/query');
+
+// SELECT
+new QueryExpression()
+    .select('field1', 'field2')
+    .from('TableName')
+    .where('field').equal('value')
+    .and('field2').greaterOrEqual(10);
+
+// INSERT
+new QueryExpression()
+    .insert({ field1: 'value1', field2: 'value2' })
+    .into('TableName');
+
+// UPDATE
+new QueryExpression()
+    .update('TableName')
+    .set({ field1: 'newValue' })
+    .where('id').equal(1);
+
+// DELETE
+new QueryExpression()
+    .delete('TableName')
+    .where('field').lowerThan(someValue);
+```
+
+### QueryField
+Used for field references and aggregations.
+
+```javascript
+const { QueryField } = require('@themost/query');
+
+// Field reference (for JOINs)
+new QueryField('TableName.fieldName')
+
+// Aggregations
+QueryField.count('id').as('totalCount')
+QueryField.sum('price').as('totalPrice')
+```
+
+### SqlFormatter
+Converts QueryExpression objects to SQL strings.
+
+```javascript
+const { SqlFormatter } = require('@themost/query');
+const formatter = new SqlFormatter();
+console.log(formatter.format(queryExpression));
+```
+
+### Common Query Methods
+- `.select()` - Specify columns
+- `.from()` - Specify table
+- `.where()` / `.and()` / `.or()` - Conditions
+- `.equal()` / `.greaterOrEqual()` / `.lowerThan()` - Comparisons
+- `.join()` / `.with()` - Table joins
+- `.groupBy()` - Grouping
+- `.orderBy()` / `.orderByDescending()` - Sorting
 
 ## Common Commands
 
@@ -126,10 +211,18 @@ npm run demo
 
 - No test framework configured yet
 - Consider adding Jest or Mocha for unit tests
+- The demo can be run to verify query module functionality: `npm run demo`
 
 ## Build & Deploy
 
 - No build process configured yet (pure Node.js, no transpilation needed)
+- Entry point defined as `index.js` in package.json (not yet created)
+
+## External Resources
+
+- [MOST Web Framework GitHub](https://github.com/themost-framework)
+- [@themost/query npm package](https://www.npmjs.com/package/@themost/query)
+- [@themost/express npm package](https://www.npmjs.com/package/@themost/express)
 
 ---
 
