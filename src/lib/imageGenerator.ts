@@ -1,8 +1,7 @@
 import { ImageStyle } from '@/types';
 
 /**
- * Generates an AI car image URL using Pollinations.ai
- * This creates a realistic image of the car based on the description
+ * Generates a car image URL using Imagin Studio (free car image API)
  */
 export function generateCarImageUrl(
   make: string,
@@ -11,16 +10,44 @@ export function generateCarImageUrl(
   color: string,
   style: ImageStyle = 'showroom'
 ): string {
-  // Build a detailed prompt for the AI image generator
-  const background = style === 'museum'
-    ? 'in a modern white automotive museum with curved architecture and dramatic lighting'
-    : 'in a professional car showroom with polished floor and studio lighting';
+  // Use Imagin Studio - free car visualization API
+  const angle = style === 'museum' ? '23' : '01';
+  const paintId = getColorCode(color);
 
-  const prompt = `Professional photograph of a ${year} ${make} ${model} in ${color} color, ${background}, high quality automotive photography, realistic, detailed, 4k`;
+  // Format: lowercase, remove spaces
+  const formattedMake = make.toLowerCase().replace(/\s+/g, '-');
+  const formattedModel = model.toLowerCase().replace(/[\/\s]+/g, '-');
 
-  // Use Pollinations.ai - free AI image generation
-  const encodedPrompt = encodeURIComponent(prompt);
-  return `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=500&nologo=true`;
+  return `https://cdn.imagin.studio/getimage?customer=hrjavascript-mastery&make=${encodeURIComponent(formattedMake)}&modelFamily=${encodeURIComponent(formattedModel)}&paintId=${paintId}&angle=${angle}&width=800&height=500`;
+}
+
+function getColorCode(color: string): string {
+  const colorCodes: Record<string, string> = {
+    'red': 'pspc0014',
+    'ferrari red': 'pspc0014',
+    'blue': 'pspc0065',
+    'dark blue': 'pspc0024',
+    'black': 'pspc0002',
+    'white': 'pspc0001',
+    'silver': 'pspc0022',
+    'grey': 'pspc0022',
+    'gray': 'pspc0022',
+    'dark grey': 'pspc0017',
+    'saville grey': 'pspc0017',
+    'yellow': 'pspc0043',
+    'orange': 'pspc0033',
+    'green': 'pspc0055',
+    'brown': 'pspc0031',
+    'beige': 'pspc0007',
+    'beach sand': 'pspc0007',
+    'gold': 'pspc0043',
+  };
+
+  const lowerColor = color.toLowerCase();
+  for (const [key, code] of Object.entries(colorCodes)) {
+    if (lowerColor.includes(key) || key.includes(lowerColor)) return code;
+  }
+  return 'pspc0022'; // Default to silver
 }
 
 /**
