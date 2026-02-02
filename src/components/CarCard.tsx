@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
 import { Car, calculateOwnership } from '@/types';
-import { generatePlaceholderImage } from '@/lib/imageGenerator';
+import { generateCarImageUrl } from '@/lib/imageGenerator';
 
 interface CarCardProps {
   car: Car;
@@ -10,52 +9,22 @@ interface CarCardProps {
 }
 
 export default function CarCard({ car, onEdit }: CarCardProps) {
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageError, setImageError] = useState(false);
   const ownership = calculateOwnership(car.yearBought, car.yearSold);
   const soldDisplay = car.yearSold ? car.yearSold.toString() : 'Present';
 
-  // Generate placeholder image for fallback
-  const placeholderUrl = useMemo(
-    () => generatePlaceholderImage(car.make, car.model, car.yearBuilt, car.color, car.imageStyle),
-    [car.make, car.model, car.yearBuilt, car.color, car.imageStyle]
-  );
-
-  // Use AI image URL or fallback to placeholder
-  const displayImageUrl = imageError || !car.imageUrl ? placeholderUrl : car.imageUrl;
+  // Generate image URL (always works - it's a data URI)
+  const imageUrl = car.imageUrl || generateCarImageUrl(car.make, car.model, car.yearBuilt, car.color, car.imageStyle);
 
   return (
     <div className="car-card bg-white rounded-lg shadow-md overflow-hidden">
       {/* Car Image */}
-      <div className="relative h-48 bg-gradient-to-br from-gray-200 to-gray-300">
-        {/* Show placeholder while AI image is loading */}
-        {!imageLoaded && !imageError && car.imageUrl && (
-          <img
-            src={placeholderUrl}
-            alt={`${car.yearBuilt} ${car.make} ${car.model} placeholder`}
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        )}
-
-        {/* Main image (AI-generated or placeholder on error) */}
+      <div className="relative h-48">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={displayImageUrl}
+          src={imageUrl}
           alt={`${car.yearBuilt} ${car.make} ${car.model}`}
-          className={`w-full h-full object-cover transition-opacity duration-500 ${
-            imageLoaded || imageError || !car.imageUrl ? 'opacity-100' : 'opacity-0'
-          }`}
-          onLoad={() => setImageLoaded(true)}
-          onError={() => setImageError(true)}
+          className="w-full h-full object-cover"
         />
-
-        {/* Loading indicator */}
-        {!imageLoaded && !imageError && car.imageUrl && (
-          <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
-            <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
-            <span>AI generating...</span>
-          </div>
-        )}
 
         {/* Edit button */}
         {onEdit && (
@@ -78,11 +47,6 @@ export default function CarCard({ car, onEdit }: CarCardProps) {
             </svg>
           </button>
         )}
-
-        {/* Image style badge */}
-        <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded capitalize">
-          {car.imageStyle}
-        </div>
       </div>
 
       {/* Car Details */}
@@ -99,7 +63,7 @@ export default function CarCard({ car, onEdit }: CarCardProps) {
 
         {/* Year and Color */}
         <p className="text-sm text-gray-500 mb-3">
-          {car.yearBuilt} &bull; {car.color.toUpperCase()}
+          {car.yearBuilt} · {car.color.toUpperCase()}
         </p>
 
         {/* Ownership Info */}

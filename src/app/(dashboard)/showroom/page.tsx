@@ -5,49 +5,20 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import { Car } from '@/types';
-import { generateCarImageUrl, generatePlaceholderImage } from '@/lib/imageGenerator';
+import { generateCarImageUrl } from '@/lib/imageGenerator';
 
-// Component for car image with loading state and placeholder fallback
+// Simple car image component - images are data URIs so they always work instantly
 function CarImage({ car, className = '' }: { car: Car; className?: string }) {
-  const [loaded, setLoaded] = useState(false);
-  const [error, setError] = useState(false);
-
-  // Generate placeholder for fallback
-  const placeholderUrl = generatePlaceholderImage(car.make, car.model, car.yearBuilt, car.color, car.imageStyle);
-
-  // Use AI image or fallback to placeholder
-  const displayUrl = error || !car.imageUrl ? placeholderUrl : car.imageUrl;
+  const imageUrl = car.imageUrl || generateCarImageUrl(car.make, car.model, car.yearBuilt, car.color, car.imageStyle);
 
   return (
-    <div className={`relative bg-gradient-to-br from-gray-200 to-gray-300 ${className}`}>
-      {/* Show placeholder while loading */}
-      {!loaded && !error && car.imageUrl && (
-        <img
-          src={placeholderUrl}
-          alt={`${car.yearBuilt} ${car.make} ${car.model} placeholder`}
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-      )}
-
-      {/* Main image */}
+    <div className={`${className}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={displayUrl}
+        src={imageUrl}
         alt={`${car.yearBuilt} ${car.make} ${car.model}`}
-        className={`w-full h-full object-cover transition-opacity duration-500 ${
-          loaded || error || !car.imageUrl ? 'opacity-100' : 'opacity-0'
-        }`}
-        onLoad={() => setLoaded(true)}
-        onError={() => setError(true)}
+        className="w-full h-full object-cover"
       />
-
-      {/* Loading indicator */}
-      {!loaded && !error && car.imageUrl && (
-        <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
-          <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
-          <span>AI generating...</span>
-        </div>
-      )}
     </div>
   );
 }
