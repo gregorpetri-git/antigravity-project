@@ -63,7 +63,7 @@ export default function LoginPage() {
       <div
         className="flex-1 flex items-center justify-center p-4"
         style={{
-          backgroundImage: `linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85)), url('/museum-bg.svg')`,
+          backgroundImage: `linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.7)), url('/museum-bg.svg')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}

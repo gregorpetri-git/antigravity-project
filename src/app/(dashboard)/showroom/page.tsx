@@ -5,48 +5,49 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import { Car } from '@/types';
-import { generateCarImageUrl } from '@/lib/imageGenerator';
+import { generateCarImageUrl, generatePlaceholderImage } from '@/lib/imageGenerator';
 
-// Component for car image with loading state
+// Component for car image with loading state and placeholder fallback
 function CarImage({ car, className = '' }: { car: Car; className?: string }) {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
 
-  if (!car.imageUrl || error) {
-    return (
-      <div className={`flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 ${className}`}>
-        <svg
-          className="w-20 h-20 text-gray-300"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1}
-            d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
-          />
-        </svg>
-      </div>
-    );
-  }
+  // Generate placeholder for fallback
+  const placeholderUrl = generatePlaceholderImage(car.make, car.model, car.yearBuilt, car.color, car.imageStyle);
+
+  // Use AI image or fallback to placeholder
+  const displayUrl = error || !car.imageUrl ? placeholderUrl : car.imageUrl;
 
   return (
-    <div className={`relative bg-gradient-to-br from-gray-100 to-gray-200 ${className}`}>
-      {!loaded && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
-        </div>
+    <div className={`relative bg-gradient-to-br from-gray-200 to-gray-300 ${className}`}>
+      {/* Show placeholder while loading */}
+      {!loaded && !error && car.imageUrl && (
+        <img
+          src={placeholderUrl}
+          alt={`${car.yearBuilt} ${car.make} ${car.model} placeholder`}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
       )}
+
+      {/* Main image */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={car.imageUrl}
+        src={displayUrl}
         alt={`${car.yearBuilt} ${car.make} ${car.model}`}
-        className={`w-full h-full object-cover transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+        className={`w-full h-full object-cover transition-opacity duration-500 ${
+          loaded || error || !car.imageUrl ? 'opacity-100' : 'opacity-0'
+        }`}
         onLoad={() => setLoaded(true)}
         onError={() => setError(true)}
       />
+
+      {/* Loading indicator */}
+      {!loaded && !error && car.imageUrl && (
+        <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+          <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
+          <span>AI generating...</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -103,7 +104,7 @@ export default function ShowroomPage() {
       <main
         className="flex-1 relative"
         style={{
-          backgroundImage: `linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)), url('/museum-bg.svg')`,
+          backgroundImage: `linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.6)), url('/museum-bg.svg')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed',
