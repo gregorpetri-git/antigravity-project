@@ -1,0 +1,22 @@
+{
+  "name": "antigravity-project",
+  "version": "1.0.0",
+  "description": "Demo project using MOST Web Framework (ZeroGravity) query module",
+  "main": "index.js",
+  "scripts": {
+    "demo": "node demo.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://local_proxy@127.0.0.1:18612/git/gregorpetri-git/antigravity-project"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@themost/express": "^5.1.1",
+    "@themost/query": "^2.14.17",
+    "express": "^5.2.1"
+  }
+}
