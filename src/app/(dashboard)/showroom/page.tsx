@@ -7,9 +7,10 @@ import Header from '@/components/Header';
 import { Car } from '@/types';
 import { generateCarImageUrl } from '@/lib/imageGenerator';
 
-// Simple car image component - images are data URIs so they always work instantly
+// Simple car image component - always generates fresh SVG data URIs
 function CarImage({ car, className = '' }: { car: Car; className?: string }) {
-  const imageUrl = car.imageUrl || generateCarImageUrl(car.make, car.model, car.yearBuilt, car.color, car.imageStyle);
+  // Always generate fresh SVG - ignore any stored URLs that might be broken
+  const imageUrl = generateCarImageUrl(car.make, car.model, car.yearBuilt, car.color, car.imageStyle);
 
   return (
     <div className={`${className}`}>
@@ -43,14 +44,9 @@ export default function ShowroomPage() {
     const storedCars = localStorage.getItem('cars');
     if (storedCars) {
       const parsedCars = JSON.parse(storedCars) as Car[];
-      // Add image URLs if missing
-      const carsWithImages = parsedCars.map((car) => ({
-        ...car,
-        imageUrl: car.imageUrl || generateCarImageUrl(car.make, car.model, car.yearBuilt, car.color, car.imageStyle),
-      }));
       // Sort by yearBought for timeline
-      carsWithImages.sort((a, b) => a.yearBought - b.yearBought);
-      setCars(carsWithImages);
+      parsedCars.sort((a, b) => a.yearBought - b.yearBought);
+      setCars(parsedCars);
     }
   }, [router]);
 

@@ -12,8 +12,8 @@ export default function CarCard({ car, onEdit }: CarCardProps) {
   const ownership = calculateOwnership(car.yearBought, car.yearSold);
   const soldDisplay = car.yearSold ? car.yearSold.toString() : 'Present';
 
-  // Generate image URL (always works - it's a data URI)
-  const imageUrl = car.imageUrl || generateCarImageUrl(car.make, car.model, car.yearBuilt, car.color, car.imageStyle);
+  // Always generate fresh SVG image - ignore any stored URLs that might be broken
+  const imageUrl = generateCarImageUrl(car.make, car.model, car.yearBuilt, car.color, car.imageStyle);
 
   return (
     <div className="car-card bg-white rounded-lg shadow-md overflow-hidden">

@@ -106,13 +106,9 @@ export default function CollectionPage() {
     // Load cars from localStorage if available, otherwise use sample data
     const storedCars = localStorage.getItem('cars');
     if (storedCars) {
+      // Load cars - images are generated fresh at render time, not stored
       const parsedCars = JSON.parse(storedCars);
-      // Regenerate image URLs for any cars that don't have them
-      const carsWithImages = parsedCars.map((car: Car) => ({
-        ...car,
-        imageUrl: car.imageUrl || generateCarImageUrl(car.make, car.model, car.yearBuilt, car.color, car.imageStyle),
-      }));
-      setCars(carsWithImages);
+      setCars(parsedCars);
     } else {
       // Use sample cars with generated images
       const sampleCars = createSampleCars();
