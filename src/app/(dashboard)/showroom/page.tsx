@@ -5,20 +5,37 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import { Car } from '@/types';
-import { generateCarImageUrl } from '@/lib/imageGenerator';
+import { generateCarImageUrl, generatePlaceholderImage } from '@/lib/imageGenerator';
 
-// Simple car image component - always generates fresh SVG data URIs
+// Car image component with AI image loading and fallback
 function CarImage({ car, className = '' }: { car: Car; className?: string }) {
-  // Always generate fresh SVG - ignore any stored URLs that might be broken
-  const imageUrl = generateCarImageUrl(car.make, car.model, car.yearBuilt, car.color, car.imageStyle);
+  const [imageError, setImageError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // AI-generated image URL
+  const aiImageUrl = generateCarImageUrl(car.make, car.model, car.yearBuilt, car.color, car.imageStyle);
+  // Fallback placeholder
+  const placeholderUrl = generatePlaceholderImage(car.make, car.model, car.yearBuilt, car.color, car.imageStyle);
 
   return (
-    <div className={`${className}`}>
+    <div className={`${className} relative bg-gray-100`}>
+      {/* Loading spinner */}
+      {isLoading && !imageError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        </div>
+      )}
+
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={imageUrl}
+        src={imageError ? placeholderUrl : aiImageUrl}
         alt={`${car.yearBuilt} ${car.make} ${car.model}`}
-        className="w-full h-full object-cover"
+        className={`w-full h-full object-cover transition-opacity duration-300 ${isLoading && !imageError ? 'opacity-0' : 'opacity-100'}`}
+        onLoad={() => setIsLoading(false)}
+        onError={() => {
+          setImageError(true);
+          setIsLoading(false);
+        }}
       />
     </div>
   );

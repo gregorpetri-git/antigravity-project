@@ -1,7 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { Car, calculateOwnership } from '@/types';
-import { generateCarImageUrl } from '@/lib/imageGenerator';
+import { generateCarImageUrl, generatePlaceholderImage } from '@/lib/imageGenerator';
 
 interface CarCardProps {
   car: Car;
@@ -12,18 +13,35 @@ export default function CarCard({ car, onEdit }: CarCardProps) {
   const ownership = calculateOwnership(car.yearBought, car.yearSold);
   const soldDisplay = car.yearSold ? car.yearSold.toString() : 'Present';
 
-  // Always generate fresh SVG image - ignore any stored URLs that might be broken
-  const imageUrl = generateCarImageUrl(car.make, car.model, car.yearBuilt, car.color, car.imageStyle);
+  // AI-generated image URL
+  const aiImageUrl = generateCarImageUrl(car.make, car.model, car.yearBuilt, car.color, car.imageStyle);
+  // Fallback placeholder
+  const placeholderUrl = generatePlaceholderImage(car.make, car.model, car.yearBuilt, car.color, car.imageStyle);
+
+  const [imageError, setImageError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   return (
     <div className="car-card bg-white rounded-lg shadow-md overflow-hidden">
       {/* Car Image */}
-      <div className="relative h-48">
+      <div className="relative h-48 bg-gray-100">
+        {/* Loading spinner */}
+        {isLoading && !imageError && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+          </div>
+        )}
+
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={imageUrl}
+          src={imageError ? placeholderUrl : aiImageUrl}
           alt={`${car.yearBuilt} ${car.make} ${car.model}`}
-          className="w-full h-full object-cover"
+          className={`w-full h-full object-cover transition-opacity duration-300 ${isLoading && !imageError ? 'opacity-0' : 'opacity-100'}`}
+          onLoad={() => setIsLoading(false)}
+          onError={() => {
+            setImageError(true);
+            setIsLoading(false);
+          }}
         />
 
         {/* Edit button */}

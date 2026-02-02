@@ -1,8 +1,8 @@
 import { ImageStyle } from '@/types';
 
 /**
- * Generates a car image - uses the styled placeholder which always works
- * The placeholder shows make, model, year, color with a nice gradient
+ * Generates an AI car image URL using Pollinations.ai
+ * This creates a realistic image of the car based on the description
  */
 export function generateCarImageUrl(
   make: string,
@@ -11,13 +11,21 @@ export function generateCarImageUrl(
   color: string,
   style: ImageStyle = 'showroom'
 ): string {
-  // Use placeholder as primary - it always works and looks good
-  return generatePlaceholderImage(make, model, year, color, style);
+  // Build a detailed prompt for the AI image generator
+  const background = style === 'museum'
+    ? 'in a modern white automotive museum with curved architecture and dramatic lighting'
+    : 'in a professional car showroom with polished floor and studio lighting';
+
+  const prompt = `Professional photograph of a ${year} ${make} ${model} in ${color} color, ${background}, high quality automotive photography, realistic, detailed, 4k`;
+
+  // Use Pollinations.ai - free AI image generation
+  const encodedPrompt = encodeURIComponent(prompt);
+  return `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=500&nologo=true`;
 }
 
 /**
- * Generates a styled placeholder image with car info
- * Uses a data URI SVG for instant display - no external dependencies
+ * Generates a styled placeholder/fallback image with car info
+ * Uses a data URI SVG for instant display when AI images fail
  */
 export function generatePlaceholderImage(
   make: string,
